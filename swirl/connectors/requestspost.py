@@ -74,13 +74,10 @@ class RequestsPost(Requests):
                 body_data = json.loads(query)
                 qs_to_provider = body_data.get("query_string", "")
                 # Extract the array of floats and ensure it's a list
-                vector_qs_to_provider = body_data.get("vector_query_string", [])
-                if isinstance(vector_qs_to_provider, list):
+                vector_qs_to_provider_str = body_data.get("vector_query_string")
+                if isinstance(vector_qs_to_provider_str, list):
                     # Convert the list of floats into a comma-separated string
-                    vector_qs_to_provider_str = ",".join(map(str, vector_qs_to_provider))
-                else:
-                    # Handle the case where the data is not a list
-                    vector_qs_to_provider_str = ""
+                    vector_qs_to_provider_str = ",".join(map(str, vector_qs_to_provider_str))
 
             if '{query_string}' in post_json_str:
                 if 'NO_URL_ENCODE' in self.provider.query_mappings:
