@@ -67,29 +67,18 @@ class RequestsPost(Requests):
 
         if post_json_str and post_json_str != '{}' and post_json_str != '"{}"':
             post_json_str     = bind_query_mappings(post_json_str, self.provider.query_mappings, self.provider.url)
-            qs_to_provider = self.query_string_to_provider
-            vector_qs_to_provider = ""
 
             if 'USE_BODY_AS_QS' in self.provider.query_mappings:
-                body_data = json.loads(query)
-                qs_to_provider = body_data.get("query_string", "")
-                # Extract the array of floats and ensure it's a list
-                vector_qs_to_provider_str = body_data.get("vector_query_string")
-                if isinstance(vector_qs_to_provider_str, list):
-                    # Convert the list of floats into a comma-separated string
-                    vector_qs_to_provider_str = ",".join(map(str, vector_qs_to_provider_str))
-
-            if '{query_string}' in post_json_str:
+                post_json_str = self._replace_query(
+                    post_json_str,
+                    query
+                )
+            elif '{query_string}' in post_json_str:
                 if 'NO_URL_ENCODE' in self.provider.query_mappings:
-                    post_json_str = post_json_str.replace('{query_string}', qs_to_provider)
+                    post_json_str = post_json_str.replace('{query_string}', self.query_string_to_provider)
                 else:
-                    post_json_str = post_json_str.replace('{query_string}', urllib.parse.quote_plus(qs_to_provider))
+                    post_json_str = post_json_str.replace('{query_string}', urllib.parse.quote_plus(self.query_string_to_provider))
 
-            if '{vector_query_string}' in post_json_str:
-                if 'NO_URL_ENCODE' in self.provider.query_mappings:
-                    post_json_str = post_json_str.replace('{vector_query_string}', vector_qs_to_provider_str)
-                else:
-                    post_json_str = post_json_str.replace('{vector_query_string}', urllib.parse.quote_plus(vector_qs_to_provider_str))
             post_json = json.loads(post_json_str)
         else:
             post_json=query
@@ -99,3 +88,32 @@ class RequestsPost(Requests):
         if 'USE_X_FORM' in self.provider.query_mappings:
             return requests.post(url, params=params, data=post_json, **kwargs)
         return requests.post(url, params=params, json=post_json, **kwargs)
+
+    def _replace_query(
+        self,
+        post_json_str: str,
+        query
+    ):
+        """
+        Replaces placeholders in the post_json_str with actual values from the query.
+
+        Args:
+            post_json_str (str): The string to replace placeholders in.
+            query (str): The query to replace placeholders with.
+        """
+        body_data = json.loads(query)
+        for key in body_data:
+            query_key = "\"{" + key + "}\""
+            if query_key in post_json_str:
+                if 'NO_URL_ENCODE' in self.provider.query_mappings:
+                    post_json_str = post_json_str.replace(
+                        query_key,
+                        body_data[key]
+                    )
+                else:
+                    post_json_str = post_json_str.replace(
+                        query_key,
+                        urllib.parse.quote_plus(body_data[key])
+                    )
+
+        return post_json_str
