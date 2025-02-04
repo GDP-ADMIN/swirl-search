@@ -102,6 +102,7 @@ class SearchProvider(models.Model):
         ('GenAIQueryProcessor', 'GenAIQueryProcessor'),
         ('AdaptiveQueryProcessor', 'AdaptiveQueryProcessor'),
         ('NoModQueryProcessor', 'NoModQueryProcessor'),
+        ('VectorizerQueryProcessor', 'VectorizerQueryProcessor'),
         ('SpellcheckQueryProcessor', 'SpellcheckQueryProcessor'),
         ('RemovePIIQueryProcessor', 'RemovePIIQueryProcessor'),
     ]

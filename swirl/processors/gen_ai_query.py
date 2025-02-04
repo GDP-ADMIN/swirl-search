@@ -3,15 +3,17 @@
 @contact:    sid@swirl.today
 '''
 
+import json
+
 from celery.utils.log import get_task_logger
 logger = get_task_logger(__name__)
 
 from django.conf import settings
 
 from swirl.processors.processor import *
-from swirl.processors.utils import get_tag
+from swirl.processors.utils import get_mappings_dict, get_tag
 from swirl.openai.openai import OpenAIClient, AI_REWRITE_USE
-
+from langchain_openai import OpenAIEmbeddings
 
 MODEL_3 = "gpt-3.5-turbo"
 MODEL_4 = "gpt-4"
@@ -170,3 +172,37 @@ class GenAIQueryProcessor(QueryProcessor):
         except Exception as x:
             logger.error(f"unexpected excecption while rewriting query, returning original")
             return self.query_string
+
+
+class VectorizerQueryProcessor(QueryProcessor):
+
+    type = 'VectorizerQueryProcessor'
+
+    def process(self):
+        dict_query_mappings = get_mappings_dict(self.query_mappings)
+
+        if 'USE_BODY_AS_QS' in self.query_mappings:
+            if 'model' in dict_query_mappings:
+                if 'openapikey' in dict_query_mappings:
+                    body_data = json.loads(self.query_string)
+                    if 'query_string' in body_data:
+                        raw_query_string = body_data['query_string'].strip('\"')
+                        try:
+                            embedding_model = OpenAIEmbeddings(
+                                model=dict_query_mappings["model"],
+                                openai_api_key=dict_query_mappings["openapikey"]
+                            )
+                            embeddings = embedding_model.embed_query(raw_query_string)
+                            if 'VECTOR_AS_STRING' in self.query_mappings:
+                                body_data['vector_query_string'] = json.dumps(embeddings)
+                            else:
+                                body_data['vector_query_string'] = embeddings
+
+                            self.query_string = json.dumps(body_data)
+                            return self.query_string
+                        except ValueError:
+                            self.warning('embedding failed')
+                            return self.query_string
+
+        self.warning('USE_BODY_AS_QS or model or openapikey is invalid')
+        return self.query_string
