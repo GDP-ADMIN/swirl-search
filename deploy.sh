@@ -20,15 +20,16 @@ ssh deployer@"${TELEPORT_HOSTNAME}" <<EOF
   if [ ! -d "${CLONE_DIR}" ]; then
     git clone --branch "${BRANCH}" "${REPO_URL}" "${CLONE_DIR}"
     cd "${CLONE_DIR}"
-    source env/bin/activate
-    python swirl.py restart
+    python swirl.py stop
+    python swirl.py start
   else
     cd "${CLONE_DIR}"
     git fetch origin
     git checkout "${BRANCH}"
     git pull origin "${BRANCH}"
     source env/bin/activate
-    python swirl.py restart
+    python swirl.py stop
+    python swirl.py start
   fi
 
 EOF
