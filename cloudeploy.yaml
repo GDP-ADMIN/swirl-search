@@ -1,0 +1,46 @@
+steps:
+- id: Download SSH Key
+  name: 'gcr.io/cloud-builders/git'
+  secretEnv: ['TELEPORT']
+  script: |
+    #!/bin/bash
+    set -xe
+    echo "$TELEPORT" >> /root/.ssh/teleport
+    chmod 400 /root/.ssh/teleport;
+  volumes:
+  - name: 'sshkey'
+    path: /root/.ssh
+
+- id: Deployment
+  name: 'us.gcr.io/glair01/deployer:teleport'
+  secretEnv: ['GH']
+  script: |
+    #!/bin/bash
+    set -xe
+    ./deploy.sh
+  env:
+  - TELEPORT_HOSTNAME=${_TELEPORT_HOSTNAME}
+  - PROJECT=${_PROJECT}
+  - BRANCH_NAME=${BRANCH_NAME}
+  volumes:
+  - name: 'sshkey'
+    path: /root/.ssh
+  waitFor:
+  - Download SSH Key
+
+timeout: 10m
+
+substitutions:
+  _PROJECT: swirl-search
+
+options:
+  machineType: 'E2_MEDIUM'
+
+availableSecrets:
+  secretManager:
+  - versionName: projects/$PROJECT_ID/secrets/INFRA_GL_TELEPORT/versions/latest
+    env: 'TELEPORT'
+  - versionName: projects/$PROJECT_ID/secrets/INFRA_GL_GITHUB_TOKEN/versions/latest
+    env: 'GH_TOKEN'
+
+tags: ['swirl-search', 'deploy', 'stag']
