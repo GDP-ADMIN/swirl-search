@@ -21,7 +21,7 @@ ssh deployer@"${TELEPORT_HOSTNAME}" <<EOF
     git clone --branch "${BRANCH}" "${REPO_URL}" "${CLONE_DIR}"
     cd "${CLONE_DIR}"
     source env/bin/activate
-    pip install -r requirements.txt
+    ./install.sh
     python swirl.py stop
     python swirl.py start
   else
@@ -30,7 +30,7 @@ ssh deployer@"${TELEPORT_HOSTNAME}" <<EOF
     git checkout "${BRANCH}"
     git pull origin "${BRANCH}"
     source env/bin/activate
-    pip install -r requirements.txt
+    ./install.sh
     python swirl.py stop
     python swirl.py start
   fi
