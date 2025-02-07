@@ -56,6 +56,10 @@ class RequestsPost(Requests):
         headers = dict({
             "Content-Type": "application/json"
         })
+        if 'USE_X_FORM' in self.provider.query_mappings:
+            headers = dict({
+                "Content-Type": "application/x-www-form-urlencoded"
+            })
         headers.update(kwargs.get("headers", {}))
         kwargs['headers'] = headers
 
@@ -63,14 +67,53 @@ class RequestsPost(Requests):
 
         if post_json_str and post_json_str != '{}' and post_json_str != '"{}"':
             post_json_str     = bind_query_mappings(post_json_str, self.provider.query_mappings, self.provider.url)
-            if '{query_string}' in post_json_str:
+
+            if 'USE_BODY_AS_QS' in self.provider.query_mappings:
+                post_json_str = self._replace_query(
+                    post_json_str,
+                    query
+                )
+            elif '{query_string}' in post_json_str:
                 if 'NO_URL_ENCODE' in self.provider.query_mappings:
                     post_json_str = post_json_str.replace('{query_string}', self.query_string_to_provider)
                 else:
                     post_json_str = post_json_str.replace('{query_string}', urllib.parse.quote_plus(self.query_string_to_provider))
+
             post_json = json.loads(post_json_str)
         else:
             post_json=query
 
         logger.debug(f"post_json_str:{post_json_str} query:{query} post_json:{post_json}")
+
+        if 'USE_X_FORM' in self.provider.query_mappings:
+            return requests.post(url, params=params, data=post_json, **kwargs)
         return requests.post(url, params=params, json=post_json, **kwargs)
+
+    def _replace_query(
+        self,
+        post_json_str: str,
+        query
+    ):
+        """
+        Replaces placeholders in the post_json_str with actual values from the query.
+
+        Args:
+            post_json_str (str): The string to replace placeholders in.
+            query (str): The query to replace placeholders with.
+        """
+        body_data = json.loads(query)
+        for key in body_data:
+            query_key = "\"{" + key + "}\""
+            if query_key in post_json_str:
+                if 'NO_URL_ENCODE' in self.provider.query_mappings:
+                    post_json_str = post_json_str.replace(
+                        query_key,
+                        body_data[key]
+                    )
+                else:
+                    post_json_str = post_json_str.replace(
+                        query_key,
+                        urllib.parse.quote_plus(body_data[key])
+                    )
+
+        return post_json_str

@@ -6,7 +6,7 @@
 from swirl.mixers import *
 import time
 from datetime import datetime
-
+import json
 import logging
 logger = logging.getLogger(__name__)
 
@@ -382,6 +382,16 @@ class SearchViewSet(viewsets.ModelViewSet):
         if tags:
             tags = tags.split(',')
 
+        filters = request.GET.get('filters', "")
+        # Validate filters
+        try:
+            filters = json.loads(filters) if filters else ""
+        except json.JSONDecodeError:
+            filters = ""  # Default to empty string if invalid
+
+        # Optionally convert back to JSON string if needed
+        filters = json.dumps(filters) if isinstance(filters, (dict, list)) else filters
+
         query_string = ""
         if 'q' in request.GET.keys():
             query_string = request.GET['q']
@@ -393,7 +403,13 @@ class SearchViewSet(viewsets.ModelViewSet):
             # run search
             logger.debug(f"{module_name}: Search.create() from ?q")
             try:
-                new_search = Search.objects.create(query_string=query_string,searchprovider_list=providers,owner=self.request.user, tags=tags)
+                new_search = Search.objects.create(
+                    query_string=query_string,
+                    searchprovider_list=providers,
+                    owner=self.request.user,
+                    tags=tags,
+                    filters=filters
+                )
             except Error as err:
                 self.error(f'Search.create() failed: {err}')
             new_search.status = 'NEW_SEARCH'
@@ -422,7 +438,17 @@ class SearchViewSet(viewsets.ModelViewSet):
             provider = int(request.GET['provider'])
 
         query_string = ""
-        if 'qs' in request.GET.keys():
+        try:
+            # Access the raw body regardless of the method
+            raw_body = request.body.decode('utf-8')  # Decode the raw body
+            body_data = json.loads(raw_body)  # Parse the JSON body if applicable
+            body_data_as_string = json.dumps(body_data)
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            body_data_as_string = ""
+
+        if body_data_as_string:
+            query_string = body_data_as_string
+        elif 'qs' in request.GET.keys():
             query_string = request.GET['qs']
         if query_string:
             # check permissions
@@ -433,8 +459,14 @@ class SearchViewSet(viewsets.ModelViewSet):
             logger.debug(f"{module_name}: Search.create() from ?qs")
             try:
                 # security review for 1.7 - OK, created with owner
-                new_search = Search.objects.create(query_string=query_string,searchprovider_list=providers,owner=self.request.user,
-                                                   pre_query_processors=pre_query_processor_single_list,tags=tags)
+                new_search = Search.objects.create(
+                    query_string=query_string,
+                    searchprovider_list=providers,
+                    owner=self.request.user,
+                    pre_query_processors=pre_query_processor_single_list,
+                    tags=tags,
+                    filters=filters
+                )
             except Error as err:
                 self.error(f'Search.create() failed: {err}')
             new_search.status = 'NEW_SEARCH'
