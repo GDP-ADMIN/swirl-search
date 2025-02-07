@@ -32,5 +32,7 @@ ssh deployer@"${TELEPORT_HOSTNAME}" <<EOF
     python swirl.py start
   fi
 
+  exit 0
+
 EOF
 
