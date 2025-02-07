@@ -13,7 +13,7 @@ steps:
 
 - id: Deployment
   name: 'us.gcr.io/glair01/deployer:teleport'
-  secretEnv: ['GH']
+  secretEnv: ['GH_TOKEN']
   script: |
     #!/bin/bash
     set -xe
