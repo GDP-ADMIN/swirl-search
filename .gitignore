@@ -139,3 +139,7 @@ dmypy.json
 # jetbrains
 .idea
 .DS_Store
+
+# Local Instalations
+.swirl
+config-swirl-demo.db.json

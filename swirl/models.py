@@ -3,6 +3,8 @@
 @contact:    sid@swirl.today
 '''
 
+import hashlib
+
 from django.db import models
 from django.urls import reverse
 
@@ -100,6 +102,7 @@ class SearchProvider(models.Model):
         ('GenAIQueryProcessor', 'GenAIQueryProcessor'),
         ('AdaptiveQueryProcessor', 'AdaptiveQueryProcessor'),
         ('NoModQueryProcessor', 'NoModQueryProcessor'),
+        ('VectorizerQueryProcessor', 'VectorizerQueryProcessor'),
         ('SpellcheckQueryProcessor', 'SpellcheckQueryProcessor'),
         ('RemovePIIQueryProcessor', 'RemovePIIQueryProcessor'),
     ]
@@ -156,6 +159,7 @@ class Search(models.Model):
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
     query_string = models.CharField(max_length=MAX_QUERY_STRING_LENGTH, default=str)
+    filters = models.CharField(max_length=MAX_QUERY_STRING_LENGTH, default=str)
     query_string_processed = models.CharField(max_length=MAX_QUERY_STRING_LENGTH, default=str, blank=True)
     SORT_CHOICES = [
         ('relevancy', 'relevancy'),
@@ -215,7 +219,7 @@ class Search(models.Model):
         return reverse('model-detail-view', args=[str(self.id)])
 
     def __str__(self):
-        signature = str(self.id) + ':' + str(self.searchprovider_list) + ':' + self.query_string
+        signature = str(self.id) + ':' + str(self.searchprovider_list) + ':' + self.query_string + ':' + hashlib.md5(self.filters.encode()).hexdigest()
         return signature
 
 class Result(models.Model):
@@ -227,6 +231,7 @@ class Result(models.Model):
     provider_id = models.IntegerField(default=0)
     searchprovider = models.CharField(max_length=50, default=str)
     query_string_to_provider = models.CharField(max_length=MAX_QUERY_STRING_LENGTH, default=str)
+    filters = models.CharField(max_length=MAX_QUERY_STRING_LENGTH, default=str)
     result_processor_json_feedback = models.JSONField(default=list)
     query_to_provider = models.CharField(max_length=MAX_QUERY_STRING_LENGTH, default=str)
     query_processors = models.JSONField(default=list, blank=True)
