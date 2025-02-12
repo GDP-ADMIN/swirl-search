@@ -7,8 +7,8 @@ import os
 from sys import path
 from os import environ
 from datetime import datetime
-
 import time
+import json
 
 import django
 
@@ -233,6 +233,8 @@ class Requests(VerifyCertsCommon):
 
             if 'text/xml' in content_type or 'application/xml' in content_type or 'application/atom+xml' in content_type:
                 json_data = xmltodict.parse(response.text)
+            elif 'application/json;charset=utf-8' == content_type:
+                json_data = json.loads(response.text)
             else:
                 if not 'application/json' in content_type:
                     logger.debug(f"content header not xml or explicitly json, assuming json")
