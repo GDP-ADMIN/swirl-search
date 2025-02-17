@@ -412,7 +412,7 @@ class Requests(VerifyCertsCommon):
 
             start = start + 10 # get only as many pages as required to satisfy provider results_per_query setting, in increments of 10
 
-            time.sleep(1)
+            time.sleep(0.1)
 
         # end for
 
