@@ -74,6 +74,7 @@ class SearchProvider(models.Model):
         ('GenAI', 'Generative AI'),
         ('RequestsGet', 'HTTP/GET returning JSON'),
         ('RequestsPost', 'HTTP/POST returning JSON'),
+        ('LLMRequestsPost', 'HTTP/POST Then LLM returning JSON'),
         ('Elastic', 'Elasticsearch Query String'),
         ('OpenSearch', 'OpenSearch Query String'),
         ('QdrantDB', 'QdrantDB'),
