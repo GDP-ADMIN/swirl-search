@@ -22,7 +22,7 @@ from swirl.connectors.oracle import Oracle
 from swirl.connectors.pinecone import PineconeDB
 
 # uncomment the line below to enable PostgreSQL
-# from swirl.connectors.postgresql import PostgreSQL
+from swirl.connectors.postgresql import PostgreSQL
 
 # Add new connectors here!
 
