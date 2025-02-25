@@ -115,6 +115,8 @@ class SearchProvider(models.Model):
         ('TestResultProcessor', 'TestResultProcessor'),
         ('MappingResultProcessor', 'MappingResultProcessor'),
         ('DateFinderResultProcessor','DateFinderResultProcessor'),
+        ('GLPIIProcessor','GLPIIProcessor'),
+        ('FAQResultProcessor','FAQResultProcessor'),
         ('DedupeByFieldResultProcessor', 'DedupeByFieldResultProcessor'),
         ('LenLimitingResultProcessor', 'LenLimitingResultProcessor'),
         ('CleanTextResultProcessor','CleanTextResultProcessor'),

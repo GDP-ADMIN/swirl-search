@@ -43,14 +43,13 @@ class LLMRequestsPost(RequestsPost):
     def send_request(self, url, params=None, query=None, **kwargs):
         response = super().send_request(url, params, query, **kwargs)
         if response.status_code == 200:
-            response_json = response.json()
-            documents = []
-            for hit in response_json.get("hits", {}).get("hits", []):
-                text = hit.get("_source", {}).get("text", "")
-                documents.append({"text": text})
-            client = None
             try:
                 client = OpenAIClient(usage=AI_QUERY_USE)
+                response_json = response.json()
+                documents = []
+                for hit in response_json.get("hits", {}).get("hits", []):
+                    text = hit.get("_source", {}).get("text", "")
+                    documents.append({"text": text})
                 completions = client.openai_client.chat.completions.create(
                     model=client.get_model(),
                     messages=[
