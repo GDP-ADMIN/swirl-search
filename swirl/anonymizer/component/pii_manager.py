@@ -19,6 +19,9 @@ from gllm_privacy.pii_detector.utils.deanonymizer_mapping import (
     DeanonymizerMapping
 )
 
+from celery.utils.log import get_task_logger
+logger = get_task_logger(__name__)
+
 
 class PIIManager(Component):
     """Class responsible for anonymizing Personally Identifiable Information (PII) in text.
@@ -90,20 +93,20 @@ class PIIManager(Component):
 
     def anonymize(
         self,
-        text_or_chunks: str | dict,
-    ) -> dict[str | dict, Any]:
+        text_or_chunks: str | list,
+    ) -> list:
         """Anonymize the provided text or chunks
 
         Args:
-            text_or_chunks (str | dict): The text or chunks to be anonymized.
+            text_or_chunks (str | list): The text or chunks to be anonymized.
 
         Returns:
-            dict[str | dict, Any]: The anonymized text or chunks and the anonymized mappings.
+            list: The anonymized text or chunks and the anonymized mappings.
         """
         anonymizer = TextAnonymizer(
             text_analyzer=self.text_analyzer
         )
-
+        anonymized_text = None
         if isinstance(text_or_chunks, str):
             anonymized_text = self._anonymize_text(
                 anonymizer,
@@ -115,9 +118,7 @@ class PIIManager(Component):
                 text_or_chunks
             )
         else:
-            raise ValueError(
-                "text_or_chunks must be either a string or a list"
-            )
+            logger.error("text_or_chunks must be either a string or a list")
 
         return {
             self.ANONYMIZED_TEXT_KEY: anonymized_text,
@@ -126,22 +127,23 @@ class PIIManager(Component):
 
     def deanonymize(
         self,
-        text_or_chunks: str | dict,
+        text_or_chunks: str | list,
         deanonymizer_mappings: Optional[Any],
-    ) -> str | dict:
+    ) -> Any:
         """Deanonymize the provided text or chunks.
 
         Args:
-            text_or_chunks (str | dict): The text or chunks to be deanonymized.
+            text_or_chunks (str | list): The text or chunks to be deanonymized.
             deanonymizer_mappings (Optional[Any]): The deanonymizer mappings.
 
         Returns:
-            str | dict: The deanonymized text or chunks.
+            Any: The deanonymized text or chunks.
         """
         anonymizer = TextAnonymizer(
             text_analyzer=self.text_analyzer
         )
 
+        deanonymized_text = None
         if isinstance(text_or_chunks, str):
             deanonymized_text = self._deanonymize_text(
                 anonymizer,
@@ -159,9 +161,7 @@ class PIIManager(Component):
                 )
             )
         else:
-            raise ValueError(
-                "text_or_chunks must be either a string or a list"
-            )
+            logger.error("text_or_chunks must be either a string or a list")
 
         return deanonymized_text
 
@@ -186,15 +186,15 @@ class PIIManager(Component):
         language = language if language == "en" else default_language
         return language
 
-    def _anonymize_chunks(self, anonymizer: TextAnonymizer, chunks: dict) -> dict:
+    def _anonymize_chunks(self, anonymizer: TextAnonymizer, chunks: list) -> list:
         """Anonymize the content of the provided chunks.
 
         Args:
             anonymizer (TextAnonymizer): The text anonymizer.
-            chunks (dict): The chunks to be anonymized.
+            chunks (list): The chunks to be anonymized.
 
         Returns:
-            dict: The anonymized chunks.
+            list: The anonymized chunks.
         """
         combined_chunks = self._combined_chunks(chunks)
         anonymized_text = self._anonymize_text(
@@ -227,18 +227,18 @@ class PIIManager(Component):
     def _deanonymize_chunks(
         self,
         anonymizer: TextAnonymizer,
-        chunks: dict,
+        chunks: list,
         deanonymizer_mapping: DeanonymizerMapping
-    ) -> dict:
+    ) -> list:
         """Deanonymize the content of the provided chunks.
 
         Args:
             anonymizer (TextAnonymizer): The text anonymizer.
-            chunks (dict): The chunks to be deanonymized.
+            chunks (list): The chunks to be deanonymized.
             deanonymizer_mapping (DeanonymizerMapping): The deanonymizer mappings.
 
         Returns:
-            dict: The deanonymized chunks.
+            list: The deanonymized chunks.
         """
         combined_chunks = self._combined_chunks(chunks)
         deanonymized_text = self._deanonymize_text(
@@ -272,13 +272,13 @@ class PIIManager(Component):
         )
         return anonymizer.deanonymize(text)
 
-    def _combined_chunks(self, chunks: dict) -> str:
+    def _combined_chunks(self, chunks: list) -> str:
         """Combine the content of the provided chunks.
 
         This function concatenates the title and body of each chunk into a single string.
 
         Args:
-            chunks (dict): The chunks to be combined.
+            chunks (list): The chunks to be combined.
 
         Returns:
             str: The combined content of the chunks.
@@ -287,15 +287,15 @@ class PIIManager(Component):
             f"{chunk['title']}{self.TITLE_BODY_DELIMITER}{chunk['body']}" for chunk in chunks
         )
 
-    def _rebuild_chunks(self, text_chunks: str, original_chunks: dict) -> dict:
+    def _rebuild_chunks(self, text_chunks: str, original_chunks: list) -> list:
         """Reconstruct the chunks from the combined content.
 
         Args:
             text_chunks (str): The combined content of the chunks.
-            original_chunks (dict): The original chunks.
+            original_chunks (list): The original chunks.
 
         Returns:
-            dict: The reconstructed chunks.
+            list: The reconstructed chunks.
         """
         chunks = []
         text_chunks = text_chunks.split(self.CHUNK_DELIMITER)

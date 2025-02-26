@@ -87,7 +87,7 @@ class AnonymizerProcessor(ResultProcessor):
         pii_result = self.pii_manager.anonymize(
             text_or_chunks=self.results
         )
-        self.results = pii_result[PIIManager.ANONYMIZED_TEXT_KEY]
+        self.results = pii_result.get(PIIManager.ANONYMIZED_TEXT_KEY, [])
         self.provider.anonymized_mappings = pii_result[PIIManager.ANONYMIZED_MAPPINGS_KEY]
         self.processed_results = self.results
         self.modified = len(self.processed_results)
@@ -153,7 +153,7 @@ class DeanonymizerProcessor(ResultProcessor):
             text_or_chunks=self.results,
             deanonymizer_mappings=getattr(self.provider, 'anonymized_mappings', {})
         )
-        self.results = deanonymize_results
+        self.results = deanonymize_results if deanonymize_results is not None else []
         self.processed_results = self.results
         self.modified = len(self.processed_results)
         return self.modified
