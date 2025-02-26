@@ -1,7 +1,11 @@
-'''
-@author:     Sid Probstein
-@contact:    sid@swirl.today
-'''
+"""This module provides processors for anonymizing and deanonymizing text.
+
+Authors:
+    Ardhian Heru Nugroho (ardhian.h.nugroho@gdplabs.id)
+
+References:
+    None
+"""
 import os
 from typing import Any
 

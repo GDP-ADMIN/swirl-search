@@ -1,6 +1,7 @@
 """This module contains PII anonymizer component.
 
 Authors:
+    Ardhian Heru Nugroho (ardhian.h.nugroho@gdplabs.id)
     Berty C L Tobing (berty.c.l.tobing@gdplabs.id)
 
 References:

@@ -1,7 +1,11 @@
-'''
-@author:     Sid Probstein
-@contact:    sid@swirl.today
-'''
+"""This module provides a processor for FAQ results.
+
+Authors:
+    Ardhian Heru Nugroho (ardhian.h.nugroho@gdplabs.id)
+
+References:
+    None
+"""
 import json
 
 from datetime import datetime

@@ -1,7 +1,12 @@
-'''
-@author:     Ardhian Heru Nugroho
-@contact:    ardhian.h.nugroho@gdplabs.id
-'''
+"""This Connector is used to connect to the OpenAI API
+to get the frequently asked questions (FAQs) from the given document.
+
+Authors:
+    Ardhian Heru Nugroho (ardhian.h.nugroho@gdplabs.id)
+
+References:
+    None
+"""
 
 from os import environ
 from sys import path
