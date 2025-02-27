@@ -93,6 +93,7 @@ networkx==3.4.2
 nltk==3.9.1
 numpy==1.26.4
 langchain-openai==0.1.13
+langdetect==1.0.9
 openai==1.61.1
 opensearch-py==2.8.0
 oracledb==2.5.1
@@ -180,3 +181,5 @@ whitenoise==6.9.0
 wrapt==1.17.2
 xmltodict==0.14.2
 zope.interface==7.2
+git+ssh://git@github.com/GDP-ADMIN/gen-ai-internal.git#subdirectory=libs/gllm-core
+git+ssh://git@github.com/GDP-ADMIN/gen-ai-internal.git#subdirectory=libs/gllm-privacy
