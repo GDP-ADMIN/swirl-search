@@ -20,10 +20,9 @@ from swirl.processors.utils import create_result_dictionary
 from celery.utils.log import get_task_logger
 logger = get_task_logger(__name__)
 
-MODEL_3 = "gpt-3.5-turbo"
-MODEL_4 = "gpt-4"
+MODEL_4O_MINI = "gpt-4o-mini"
 
-MODEL = MODEL_3
+MODEL = MODEL_4O_MINI
 
 
 class FAQResultProcessor(ResultProcessor):
