@@ -5,6 +5,7 @@
 
 from swirl.connectors.requestsget import RequestsGet
 from swirl.connectors.requestspost import RequestsPost
+from swirl.connectors.llmrequestspost import LLMRequestsPost
 from swirl.connectors.sqlite3 import Sqlite3
 from swirl.connectors.elastic import Elastic
 from swirl.connectors.opensearch import OpenSearch
