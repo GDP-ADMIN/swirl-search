@@ -15,6 +15,7 @@ ssh deployer@"${TELEPORT_HOSTNAME}" <<EOF
   git config --global user.username infra-gl
   git config --global user.email infra@gdplabs.id
   git config --global url."https://${GH_TOKEN}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
+  git config --global url."https://${GH_TOKEN}:x-oauth-basic@github.com".insteadOf "ssh://git@github.com"
 
   # Clone repo if not already present
   if [ ! -d "${CLONE_DIR}" ]; then
